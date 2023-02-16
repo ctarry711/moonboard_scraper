@@ -2,8 +2,6 @@ from __future__ import print_function
 
 import requests
 from lxml import html
-import pandas as pd
-import openpyxl
 import json
 from datetime import date
 from datetime import timedelta
