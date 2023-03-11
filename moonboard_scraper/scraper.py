@@ -38,9 +38,8 @@ def scrape_browser_site():
         headers = dict(referer=login_url)
     )
 
-
-def scrape_moonboard_data(country, pages):
-    rankings_url = "https://www.moonboard.com/Ranking/GetRankings?userid=2b3ba803-6ada-4393-94a8-50250d243a21&setupId=1&configurationId=0"
+def scrape_moonboard_data(country, pages, setupID="1"):
+    rankings_url = "https://www.moonboard.com/Ranking/GetRankings?userid=2b3ba803-6ada-4393-94a8-50250d243a21&setupId=" + setupID + "&configurationId=0"
 
     headers = { 
         "Host": "www.moonboard.com",
@@ -76,10 +75,10 @@ def decode_data(raw_data): # returns a list dictionarys, in order of ranking
     data = json.loads(raw_data.decode())['Data']
     return data
 
-def scrape_todays_data(country, pages):
+def scrape_todays_data(country, pages, setupID):
     data_today = []
     for page in range(1, pages + 1):
-        raw_data = scrape_moonboard_data(country, page)
+        raw_data = scrape_moonboard_data(country, page, setupID)
         new_people = decode_data(raw_data)
         data_today.extend(new_people)
     return data_today
@@ -95,14 +94,15 @@ def moon_day():
         moon_day = str(actual_day)
     return moon_day
 
-def scrape_and_save(country='Canada', pages=4):
-    with open("canada_data.json", "r+") as json_data:
+def scrape_and_save(country='canada', pages=4, setupID="1"):
+    data_file_name = country + "_data.json"
+    with open(data_file_name, "r+") as json_data:
         data = json.load(json_data)
 
         if moon_day() in data:
             print("Already have data for this date")
         else:
-            data_today = scrape_todays_data(country, pages)
+            data_today = scrape_todays_data(country, pages, setupID)
             data[moon_day()] = data_today
             json_data.seek(0)
             json.dump(data, json_data)
@@ -212,7 +212,7 @@ def api_data_object3():
                         difference = rankings_by_id[entry_id] - entry["GlobalRanking"]
                         differences[index].append(difference)
 
-    data_range = 'Summary!C1:H201'
+    data_range = 'Summary!C1:H501'
 
     major_dimension = 'COLUMNS'
 
@@ -281,5 +281,6 @@ def upload_data(data1=None, data2=None, data3=None):
     except HttpError as err:
         print(err)
 
-scrape_and_save("Canada", 4)
+scrape_and_save("Canada", 10)
+scrape_and_save("united states", 20)
 upload_data(api_data_object1(),api_data_object2(),api_data_object3())
